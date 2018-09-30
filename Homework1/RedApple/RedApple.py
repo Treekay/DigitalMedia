@@ -1,38 +1,44 @@
 from PIL import Image
-import time
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-def statistics(channel):
-    pixels = []
-    for i in range(255):
-        pixels[i+1] = (i+1,0)
-    for pix in channel:
-        pixels[pix] += 1
-    return pixels
-
 img = np.array(Image.open('../img/redapple.jpg'))
 rows, cols, dims = img.shape
-# pick up each color channel    
-Rchannel = list(img[x,y,0]).sort()
-Gchannel = list(img[x,y,1]).sort()
-Bchannel = list(img[x,y,2]).sort()
-# statistics r,g,b of pixels
-Rpixels = statistics(Rchannel)
-Gpixels = statistics(Gchannel)
-Bpixels = statistics(Bchannel)
 
-front = 0
-back = Rpixels.size() - 1
-for i in range(8):
-    median = (front+back)//2
-    # Red for 3 times
-    if i%3==0:
-        for t in range(front,median):
+plt.imshow(img)
+plt.pause(2)
 
-    # Green for 3 times
-    elif i%3==1:
+# pick up all the pixels
+pixels = []
+for x in range(rows):
+    for y in range(cols):
+        pixels.append(img[x,y,:])
 
-    # Blue for 2 times
-    else:
+# initial
+channel = [[],[],[]]
+R, G, B = 0, 1, 2
+for i in range(256):
+    channel[R].append(0)
+    channel[G].append(0)
+    channel[B].append(0)
+
+# statistics the num of each r,g,b
+for i in range(pixels.size()):
+    channel[R][pixels[i][R]] += 1
+    channel[G][pixels[i][G]] += 1
+    channel[B][pixels[i][B]] += 1
+
+# get the ColorNumTuple
+tube = [[],[],[]]
+for i in range(3):
+    for t in range(channel[i].size()):
+        if (channel[i][t] != 0):
+            tube[i].append(tuple(t,channel[i][t]))
+
+sorted(tube[R], key=lambda tube[R] : tube[R][1])
+sorted(tube[G], key=lambda tube[G] : tube[G][1])
+sorted(tube[B], key=lambda tube[B] : tube[B][1])
+
+def divideByRchannel(tubes):
+    
