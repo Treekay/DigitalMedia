@@ -12,9 +12,6 @@ def findMedian(tubes,medianNum):
 img = np.array(Image.open('../img/redapple.jpg'))
 rows, cols, dims = img.shape
 
-#plt.imshow(img)
-#plt.pause(2)
-
 # pick up all the pixels
 pixels = []
 for x in range(rows):
@@ -46,4 +43,4 @@ for i in range(3):
 print(tube[R],'\n',tube[G],'\n',tube[B])
 medianNum = len(pixels)//2
 
-print(findMedian(tube[R],medianNum),findMedian(tube[G],medianNum),findMedian(tube[B],medianNum))
+print(findMedian(tube[R],medianNum))
