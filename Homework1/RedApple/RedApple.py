@@ -9,38 +9,51 @@ def findMedian(tubes,medianNum):
             return int(tubes[i][0])
         else: medianNum -= tubes[i][1]
 
+def ImgProcess(img):
+    rows, cols, dims = img.shape
+    R, G, B = 0, 1, 2
+
+    pixels = []
+    # pick up all the pixels
+    for x in range(rows):
+        for y in range(cols):
+            pixels.append(img[x,y,:])
+
+    distribution = [[],[],[]]
+    # initial and statistics the num of each channel
+    for i in range(256):
+        distribution[R].append(0)
+        distribution[G].append(0)
+        distribution[B].append(0)
+    for i in range(len(pixels)):
+        distribution[R][pixels[i][R]] += 1
+        distribution[G][pixels[i][G]] += 1
+        distribution[B][pixels[i][B]] += 1
+
+    channel = [[],[],[]]
+    # get the Color-Num Pairs
+    for i in range(3):
+        for t in range(256):
+            if (distribution[i][t] != 0):
+                channel[i].append([t,distribution[i][t]])
+
+    # determine the 256 present color
+    R1 = [[],[]]
+    # Loop1: R
+    medianNum = len(pixels)
+    for t in range(8):
+        medianNum = medianNum//2
+        ltimes = pixels // medianNum
+        if (t%3 == 0):
+            for i in range(ltimes):
+                for index in range(channel[R][i*medianNum:(i+1)*medianNum]):
+
+        elif (t%3 == 1):
+        elif (t%3 == 2):
+
+    # show and save the new img
+    
+
+# main()
 img = np.array(Image.open('../img/redapple.jpg'))
-rows, cols, dims = img.shape
-
-# pick up all the pixels
-pixels = []
-for x in range(rows):
-    for y in range(cols):
-        pixels.append(img[x,y,:])
-
-# initial
-channel = [[],[],[]]
-R, G, B = 0, 1, 2
-for i in range(256):
-    channel[R].append(0)
-    channel[G].append(0)
-    channel[B].append(0)
-
-print(len(pixels))
-# statistics the num of each r,g,b
-for i in range(len(pixels)):
-    channel[R][pixels[i][R]] += 1
-    channel[G][pixels[i][G]] += 1
-    channel[B][pixels[i][B]] += 1
-
-# get the ColorNumTuple
-tube = [[],[],[]]
-for i in range(3):
-    for t in range(len(channel[i])):
-        if (channel[i][t] != 0):
-            tube[i].append([t,channel[i][t]])
-
-print(tube[R],'\n',tube[G],'\n',tube[B])
-medianNum = len(pixels)//2
-
-print(findMedian(tube[R],medianNum))
+ImgProcess(img)
