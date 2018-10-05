@@ -10,6 +10,9 @@ rows, cols, dims = im1.shape
 
 # initial the counting time
 t = 0
+plt.imshow(im1)
+plt.axis('off')
+plt.pause(7)
 while t < 500:
     # check each pixel by rows and cols
     for x in range(rows):
