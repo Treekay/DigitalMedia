@@ -18,17 +18,6 @@ def convert(img):
         txt += '\n'
     return  txt
 
-def convert1(img):
-    txt = ""
-    for i in range(img.size[1]):
-        for j in range(img.size[0]):
-            r,g,b = img.getpixel((j, i))           #获取每个坐标像素点的rgb值
-            gray = int(r * 0.299 + g * 0.587 + b * 0.114)   #通过灰度转换公式获取灰度
-            unit = (256.0+1)/length
-            txt += ascii_char[int(gray / unit)]  # 获取对应坐标的字符值
-        txt += '\n'
-    return txt
-
 txt = convert(img)
 f = open("1_convert.txt","w")
 f.write(txt)            #存储到文件中
