@@ -43,6 +43,7 @@ def ImgProcess(img):
     # show and save the new img
     img = Image.fromarray(np.uint8(img))
     plt.figure(2)
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) # 去除白边
     plt.imshow(img)
     plt.axis('off')
     plt.savefig("../img/hw2.jpg")
@@ -53,5 +54,6 @@ image = Image.open('../img/redapple.jpg')
 img = np.array(image)
 plt.figure(1)
 plt.imshow(img)
-plt.axis('off')
+plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) # 去除白边
+plt.axis('off') # 去除坐标系
 ImgProcess(img)
