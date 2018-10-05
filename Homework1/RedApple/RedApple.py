@@ -45,8 +45,8 @@ def ImgProcess(img):
     plt.figure(2)
     plt.imshow(img)
     plt.axis('off')
-    plt.show()
     plt.savefig("../img/hw2.jpg")
+    plt.show()
 
 # main()
 image = Image.open('../img/redapple.jpg')
