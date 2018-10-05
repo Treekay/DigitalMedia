@@ -14,9 +14,6 @@ def ImgProcess(img):
         for y in range(cols):
             pixels.append([img[x,y,R],img[x,y,G],img[x,y,B]])
 
-    #debug
-    print(pixels)
-
     # determine the 256 present color
     medianNum = len(pixels)
     pixels.sort(key=operator.itemgetter(R))
@@ -33,18 +30,23 @@ def ImgProcess(img):
             for i in range(ltimes):
                 pixels[i*medianNum:(i+1)*medianNum].sort(key=operator.itemgetter(B))
 
+    newImg = img
     region = len(pixels)//256
     for t in range(256):
         medianColor = pixels[(2*t+1)*region//2]
         for i in range((t+1)*region):
-            pixels[i] = medianColor
-
-    #debug
-    print(pixels)
-
+            for x in range(rows):
+                for y in range(cols):
+                    if (newImg[x,y,R] == pixels[i][R] and
+                        newImg[x,y,G] == pixels[i][G] and
+                        newImg[x,y,G] == pixels[i][G]):
+                        newImg[x,y,R] = medianColor[R]
+                        newImg[x,y,G] = medianColor[G]
+                        newImg[x,y,B] = medianColor[B]
+            #pixels[i] = medianColor
 
     # show and save the new img
-    img = Image.fromarray(np.uint8(pixels))
+    img = Image.fromarray(np.uint8(newImg))
     plt.figure(2)
     plt.imshow(img)
     plt.axis('off')
