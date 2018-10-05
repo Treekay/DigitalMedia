@@ -3,6 +3,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import operator
+import cv2
 
 def ImgProcess(img):
     rows, cols, dims = img.shape

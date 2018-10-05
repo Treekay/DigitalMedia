@@ -2,6 +2,7 @@ from PIL import Image
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 
 # load the images and keep its data in np.array type
 im1 = np.array(Image.open('../img/诺贝尔.jpg'))
@@ -11,7 +12,7 @@ rows, cols, dims = im1.shape
 # initial the counting time
 t = 0
 while t < 500:
-    # check each pixel by rows and cols
+    # check each pixel by orws and cols
     for x in range(rows):
         for y in range(cols):
             # the radius decide by the time
