@@ -2,58 +2,48 @@ from PIL import Image
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-
-def findMedian(tubes,medianNum):
-    for i in range(len(tubes)):
-        if (medianNum-tubes[i][1]<=0):
-            return int(tubes[i][0])
-        else: medianNum -= tubes[i][1]
+import operator
 
 def ImgProcess(img):
     rows, cols, dims = img.shape
     R, G, B = 0, 1, 2
-
     pixels = []
+
     # pick up all the pixels
     for x in range(rows):
         for y in range(cols):
-            pixels.append(img[x,y,:])
-
-    distribution = [[],[],[]]
-    # initial and statistics the num of each channel
-    for i in range(256):
-        distribution[R].append(0)
-        distribution[G].append(0)
-        distribution[B].append(0)
-    for i in range(len(pixels)):
-        distribution[R][pixels[i][R]] += 1
-        distribution[G][pixels[i][G]] += 1
-        distribution[B][pixels[i][B]] += 1
-
-    channel = [[],[],[]]
-    # get the Color-Num Pairs
-    for i in range(3):
-        for t in range(256):
-            if (distribution[i][t] != 0):
-                channel[i].append([t,distribution[i][t]])
+            pixels.append([img[x,y,R],img[x,y,G],img[x,y,B]])
 
     # determine the 256 present color
-    R1 = [[],[]]
-    # Loop1: R
     medianNum = len(pixels)
+    pixels.sort(key=operator.itemgetter(R))
     for t in range(8):
         medianNum = medianNum//2
-        ltimes = pixels // medianNum
+        ltimes = len(pixels) // medianNum
         if (t%3 == 0):
             for i in range(ltimes):
-                for index in range(channel[R][i*medianNum:(i+1)*medianNum]):
-
+                pixels[i*medianNum:(i+1)*medianNum].sort(key=operator.itemgetter(R))
         elif (t%3 == 1):
+            for i in range(ltimes):
+                pixels[i*medianNum:(i+1)*medianNum].sort(key=operator.itemgetter(G))
         elif (t%3 == 2):
+            for i in range(ltimes):
+                pixels[i*medianNum:(i+1)*medianNum].sort(key=operator.itemgetter(B))
+
+    region = len(pixels)//256
+    for t in range(256):
+        medianColor = pixels[(2*t+1)*region//2]
+        for i in range((t+1)*region):
+            pixels[i] = medianColor
 
     # show and save the new img
-    
+    img = Image.fromarray(np.uint8(pixels))
+    plt.imshow(img)
+    plt.show()
+    plt.savefig("../img/hw2.jpg")
 
 # main()
-img = np.array(Image.open('../img/redapple.jpg'))
+image = Image.open('../img/redapple.jpg')
+#image.show()
+img = np.array(image)
 ImgProcess(img)
