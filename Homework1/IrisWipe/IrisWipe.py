@@ -20,6 +20,7 @@ while t < 500:
                 im1[x,y,:] = im2[x,y,:]
     t += 40
     plt.imshow(im1)
+    plt.axis('off')
     # keep a while show the changing process
     plt.pause(0.03)
 plt.close()
