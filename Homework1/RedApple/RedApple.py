@@ -1,5 +1,9 @@
+from PIL import Image
 import operator
+import numpy as np
+import matplotlib.pyplot as plt
 import cv2
+import sys
 
 def ImgProcess(img):
     rows, cols, dims = img.shape
@@ -37,6 +41,7 @@ def ImgProcess(img):
             img[x,y,G] = medianColor[G]
             img[x,y,B] = medianColor[B]
 
+    
     # save the new img
     cv2.imwrite("../res/hw2.jpg",img)
 
@@ -46,5 +51,32 @@ def ImgProcess(img):
     cv2.waitKey(0)
     ###press 'ESC' to exit
 
+
+    '''
+    height, width, channels = img.shape
+    # 去除坐标系
+    plt.axis('off')
+    # 去除图像周围的白边  
+    fig, ax = plt.subplots()
+    plt.figure(figsize=(6,4))
+    fig.set_size_inches(width/100.0/3.0, height/100.0/3.0)  
+    plt.gca().xaxis.set_major_locator(plt.NullLocator()) 
+    plt.gca().yaxis.set_major_locator(plt.NullLocator()) 
+    plt.subplots_adjust(top=1,bottom=0,left=0,right=1,hspace=0,wspace=0) 
+    plt.margins(0,0)
+    plt.imshow(Image.fromarray(img))
+    # save
+    plt.savefig('../res/hw2.jpg', dpi=300)
+    plt.show()
+    '''
+
 # main()
+f1 = open("../res/np.txt",'a')
+f1.write(str(np.array(Image.open('../img/redapple.jpg'))))
+f1.close()
+
+f2 = open("../res/cv.txt",'a')
+f2.write(str(cv2.imread('../img/redapple.jpg')))
+f2.close()
+
 ImgProcess(cv2.imread('../img/redapple.jpg'))
