@@ -41,6 +41,7 @@ def ImgProcess(img):
             img[x,y,G] = medianColor[G]
             img[x,y,B] = medianColor[B]
 
+    '''
     height, width, channels = img.shape
     # 去除坐标系
     fig, ax = plt.subplots() 
@@ -51,15 +52,19 @@ def ImgProcess(img):
     plt.gca().yaxis.set_major_locator(plt.NullLocator()) 
     plt.subplots_adjust(top=1,bottom=0,left=0,right=1,hspace=0,wspace=0) 
     plt.margins(0,0)
-
+    
     # save the new img
     img = Image.fromarray(np.uint8(img))
     plt.imshow(img)
     plt.savefig("../img/hw2.jpg",dpi=300)
-
+    '''
+    cv2.imwrite("../img/hw2.jpg",img)
 # main()
+'''
 img = np.array(Image.open('../img/redapple.jpg'))
 ImgProcess(img)
+'''
+ImgProcess(cv2.imread('../img/redapple.jpg'))
 
 # show the new img
 cv2.imshow("RedApple", cv2.imread('../img/redapple.jpg'))
