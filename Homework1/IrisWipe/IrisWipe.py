@@ -2,7 +2,6 @@ from PIL import Image
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
 
 # load the images and keep its data in np.array type
 img1 = Image.open('../img/诺贝尔.jpg')
@@ -35,7 +34,7 @@ while t < 500:
     t += 40
     plt.imshow(im1)
     plt.axis('off') # 去除坐标系
-    
+
     # keep a while show the changing process
     plt.pause(0.03)
 plt.close()
