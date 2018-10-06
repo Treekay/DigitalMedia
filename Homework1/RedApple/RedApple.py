@@ -41,20 +41,37 @@ def ImgProcess(img):
             img[x,y,G] = medianColor[G]
             img[x,y,B] = medianColor[B]
 
-    # show and save the new img
+    height, width, channels = img.shape
+
+    # 去除坐标系
+    fig, ax = plt.subplots() 
+    plt.axis('off')
+
+    # show the new img
     img = Image.fromarray(np.uint8(img))
     plt.figure(2)
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) # 去除白边
     plt.imshow(img)
-    plt.axis('off')
-    plt.savefig("../img/hw2.jpg")
     plt.show()
+    
+    # 去除白边
+    fig.set_size_inches(width/100.0/3.0, height/100.0/3.0)  
+    plt.gca().xaxis.set_major_locator(plt.NullLocator()) 
+    plt.gca().yaxis.set_major_locator(plt.NullLocator()) 
+    plt.subplots_adjust(top=1,bottom=0,left=0,right=1,hspace=0,wspace=0) 
+    plt.margins(0,0)
+
+    # save the new img
+    plt.savefig("../img/hw2.jpg",dpi=300)
 
 # main()
 image = Image.open('../img/redapple.jpg')
 img = np.array(image)
+
+# 去除坐标系
+fig, ax = plt.subplots() 
+plt.axis('off')
+
 plt.figure(1)
 plt.imshow(img)
-plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=None) # 去除白边
-plt.axis('off') # 去除坐标系
+
 ImgProcess(img)
