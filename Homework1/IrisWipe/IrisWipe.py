@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 def IrisWipe(img1, img2):
+
     '''
     #only show in red channel
     r1, g1, b1 = img1.split()
@@ -16,8 +17,11 @@ def IrisWipe(img1, img2):
     im1 = np.array(img1)
     im2 = np.array(img2)
 
-    #rows, cols = im1.shape  #for red channel only
-    rows, cols, dims = im1.shape #for three channels
+    #for red channel only
+    #rows, cols = im1.shape
+
+    #for three channels
+    rows, cols, dims = im1.shape
 
     # initial the counting time
     t = 0
