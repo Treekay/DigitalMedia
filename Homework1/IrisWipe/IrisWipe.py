@@ -23,7 +23,7 @@ def IrisWipe(img1, img2):
         frames.append(im1)
 
     # create a gif
-        frames[0].save('../res/IrisWipe.gif', )
+        
     # Show the gif
         
 
