@@ -13,7 +13,6 @@ def ImgProcess(img):
 
     # determine the 256 present color
     medianPos = len(pixels)
-    pixels.sort(key=operator.itemgetter(R))
     for t in range(8):
         ltimes = len(pixels)//medianPos
         if (t%3 == 0):
