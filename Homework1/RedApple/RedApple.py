@@ -53,10 +53,10 @@ def ImgProcess(img):
     cv2.imwrite("../res/hw2.jpg",img)
 
     # show and compare
-    cv2.imshow("RedApple", cv2.imread('../img/redapple.jpg'))
-    cv2.imshow("AfterProcess", cv2.imread('../res/hw2.jpg'))
+    cv2.imshow("RedApple", cv2.imread('./img/redapple.jpg'))
+    cv2.imshow("AfterProcess", cv2.imread('./img/hw2.jpg'))
     cv2.waitKey(0)
     ###press 'ESC' to exit
 
 # main()
-ImgProcess(cv2.imread('../img/redapple.jpg'))
+ImgProcess(cv2.imread('./img/redapple.jpg'))

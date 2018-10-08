@@ -23,12 +23,12 @@ def IrisWipe(img1, img2):
         frames.append(Image.fromarray(im1))
 
     # create a gif
-    frames[0].save('../res/hw1.gif', save_all=True, append_images=frames[1:], duration=0.01, loop=0)
+    frames[0].save('./img/hw1.gif', save_all=True, append_images=frames[1:], duration=0.01, loop=0)
     # Show the gif
-    os.system(r"start ../res/hw1.gif")
+    os.system(r"start ./img/hw1.gif")
     print("Success")
 
 # main()
-img1 = Image.open('../img/Nobel.jpg')
-img2 = Image.open('../img/lena.jpg')
+img1 = Image.open('./img/Nobel.jpg')
+img2 = Image.open('./img/lena.jpg')
 IrisWipe(img1, img2)
