@@ -1,56 +1,48 @@
+from PIL import Image
+import numpy as np
 import operator
 import cv2
+import copy
+import time
+
+def findMinEdistancePos(a,b):
+    return np.argmin(np.sqrt(np.sum(np.asarray(a-b)**2, axis=1)))
 
 def ImgProcess(img):
-    rows, cols, dims = img.shape
-    R, G, B = 2, 1, 0
-    pixels = []
+    R, G, B = 0, 1, 2
+    dim1, dim2, dim3 = img.shape
+    img = np.reshape(img,(-1,3))
+    pixels = copy.deepcopy(img)
 
-    # pick up all the pixels
-    for x in range(rows):
-        for y in range(cols):
-            pixels.append([img[x,y,B],img[x,y,G],img[x,y,R],x,y])
-
-    # determine the 256 present color
+    # sort the pixels color
     medianPos = len(pixels)
     for t in range(8):
         ltimes = len(pixels)//medianPos
-        if (t%3 == 0):
-            for i in range(ltimes):
-                temp = pixels[i*medianPos:(i+1)*medianPos]
-                temp.sort(key=operator.itemgetter(R))
-                pixels[i*medianPos:(i+1)*medianPos] = temp
-        elif (t%3 == 1):
-            for i in range(ltimes):
-                temp = pixels[i*medianPos:(i+1)*medianPos]
-                temp.sort(key=operator.itemgetter(G))
-                pixels[i*medianPos:(i+1)*medianPos] = temp
-        elif (t%3 == 2):
-            for i in range(ltimes):
-                temp = pixels[i*medianPos:(i+1)*medianPos]
-                temp.sort(key=operator.itemgetter(B))
-                pixels[i*medianPos:(i+1)*medianPos] = temp
+        for i in range(ltimes):
+            temp = pixels[i*medianPos:(i+1)*medianPos]
+            pixels[i*medianPos:(i+1)*medianPos] = temp[np.lexsort(temp.T[t%3,None])]
         medianPos = medianPos//2
 
-    region = len(pixels)//256
-    for t in range(256):
-        Rsum = 0
-        Gsum = 0
-        Bsum = 0
-        for i in range(t*region,(t+1)*region):
-            Rsum += pixels[i][R]
-            Gsum += pixels[i][G]
-            Bsum += pixels[i][B]
-        presentColor = [Bsum//region,Gsum//region,Rsum//region]
-        for i in range(t*region,(t+1)*region):
-            x = pixels[i][3]
-            y = pixels[i][4]
-            img[x,y,R] = presentColor[R]
-            img[x,y,G] = presentColor[G]
-            img[x,y,B] = presentColor[B]
+    # create the LUT
+    regionLen = len(pixels)//256
+    LUT = []
+    for i in range(256):
+        LUT.append(np.rint(np.mean(pixels[i*regionLen:(i+1)*regionLen-1],axis=0)).tolist())
+    np.array(LUT)
+
+    # process the img
+    time_start=time.time()
+    print("Processing...")
+    for i in range(len(img)):
+        img[i] = LUT[findMinEdistancePos(img[i],LUT)]
+    img = np.reshape(img,(dim1,dim2,dim3))
+    print("Finish!")
+    time_end=time.time()
+    print("cost time:",int(time_end-time_start),"s")
 
     # save the new img
-    cv2.imwrite("../res/hw2.jpg",img)
+    im = Image.fromarray(img)
+    im.save("./img/hw2.jpg")
 
     # show and compare
     cv2.imshow("RedApple", cv2.imread('./img/redapple.jpg'))
@@ -59,4 +51,4 @@ def ImgProcess(img):
     ###press 'ESC' to exit
 
 # main()
-ImgProcess(cv2.imread('./img/redapple.jpg'))
+ImgProcess(np.array(Image.open('./img/redapple.jpg')))
