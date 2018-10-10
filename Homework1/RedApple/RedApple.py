@@ -6,13 +6,15 @@ import time
 def findMinEdistancePos(a,b):
     return np.argmin(np.sqrt(np.sum(np.asarray(a-b)**2, axis=1)))
 
-def ImgProcess(img):
+def ImgProcess(str):
+    # initial
+    img = np.array(Image.open(str)) # origin img
     R, G, B = 0, 1, 2
     dim1, dim2, dim3 = img.shape
     img = np.reshape(img,(-1,3))
-    pixels = copy.deepcopy(img)
+    pixels = copy.deepcopy(img) # for process
 
-    # sort the pixels color
+    # sort and divide into 256 regions
     medianPos = len(pixels)
     for t in range(8):
         ltimes = len(pixels)//medianPos
@@ -47,7 +49,7 @@ def ImgProcess(img):
 print("Processing...")
 time_start=time.time()
 
-ImgProcess(np.array(Image.open('./img/redapple.jpg')))
+ImgProcess('./img/redapple.jpg')
 print("Finish!")
 
 time_end=time.time()
