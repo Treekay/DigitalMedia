@@ -1,7 +1,5 @@
 from PIL import Image
 import numpy as np
-import operator
-import cv2
 import copy
 import time
 
@@ -45,9 +43,8 @@ def ImgProcess(img):
     im.save("./img/hw2.jpg")
 
     # show and compare
-    cv2.imshow("RedApple", cv2.imread('./img/redapple.jpg'))
-    cv2.imshow("AfterProcess", cv2.imread('./img/hw2.jpg'))
-    cv2.waitKey(0)
+    Image.open('./img/redapple.jpg').show(title="RedApple")
+    Image.open('./img/hw2.jpg').show(title="AfterProcess")
     ###press 'ESC' to exit
 
 # main()
