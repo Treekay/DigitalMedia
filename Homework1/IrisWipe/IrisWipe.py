@@ -15,7 +15,7 @@ def IrisWipe(img1, img2):
     while r <= 580:
         for x in range(cols):
             for y in range(rows):
-                if (pow(x-rows//2-1,2)+pow(y-rows//2-1,2)<=pow(r,2)):
+                if (pow(x - rows // 2 - 1,2) + pow(y - rows // 2 - 1,2) <= pow(r, 2)):
                     # change the circle region to lena
                     im1[x,y] = im2[x,y]
         r += 15
@@ -23,7 +23,7 @@ def IrisWipe(img1, img2):
         frames.append(Image.fromarray(im1))
 
     # create a gif
-    frames[0].save('./img/hw1.gif', save_all=True, append_images=frames[1:], duration=0.01, loop=0)
+    frames[0].save('./img/hw1.gif', save_all = True, append_images = frames[1:], duration = 0.01, loop = 0)
     # Show the gif
     os.system(r"start ./img/hw1.gif")
     print("Success")
