@@ -19,7 +19,7 @@ def ImageProcess(str1, str2):
     # 引进进度条
     widgets = ['Progress:',Percentage(), ' ',Bar('#'),' ', 
             Timer(), ' ', ETA(), ' ', FileTransferSpeed()]
-    pbar = ProgressBar(widgets=widgets, maxval=580).start()
+    pbar = ProgressBar(widgets=widgets, maxval=300).start()
 
     '''
         半径从 0 逐渐增大, 圆内区域将图片1的像素值改为图片2的像素值
@@ -28,7 +28,7 @@ def ImageProcess(str1, str2):
     '''
     r = 0
     frames = []
-    while r <= 580:
+    while r <= 300:
         # 更新进度条
         pbar.update(r)
         for x in range(cols):

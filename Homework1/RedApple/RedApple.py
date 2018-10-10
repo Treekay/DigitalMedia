@@ -26,7 +26,6 @@ def ImageProcess(str):
     img = np.reshape(img,(-1, 3))
     pixels = copy.deepcopy(img) # for process 
 
-    
     # 按照中值区分算法对像素块进行排序划分成256个区域
     medianPos = len(pixels)
     for t in range(8):
