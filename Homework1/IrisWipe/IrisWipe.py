@@ -1,34 +1,59 @@
-from PIL import Image
-import numpy as np
+# -*- coding :utf-8 -*-
 import os
 import math
 
-def IrisWipe(img1, img2):
-    im1 = np.array(img1)
-    im2 = np.array(img2)
-    rows, cols, dims = im1.shape
+import numpy as np
+from PIL import Image
+from progressbar import *
 
-    # initial
+'''
+    产生一个从图片1到图片2的虹膜擦拭切换动画gif图
+    @param str1: the router of the image1
+    @param str2: the router of the image2
+'''
+def ImageProcess(str1, str2):
+    img1 = np.array(Image.open(str1))
+    img2 = np.array(Image.open(str2))
+    rows, cols, dims = img1.shape
+
+    # 引进进度条
+    widgets = ['Progress:',Percentage(), ' ',Bar('#'),' ', 
+            Timer(), ' ', ETA(), ' ', FileTransferSpeed()]
+    pbar = ProgressBar(widgets=widgets, maxval=580).start()
+
+    '''
+        半径从 0 逐渐增大, 圆内区域将图片1的像素值改为图片2的像素值
+        对每一个半径大小修改后的图片, 保存到缓存列表
+        完成整个变化过程后, 用缓存列表生成 gif 文件并显示
+    '''
     r = 0
     frames = []
-    print("Creating...")
     while r <= 580:
+        # 更新进度条
+        pbar.update(r)
         for x in range(cols):
             for y in range(rows):
-                if (pow(x - rows // 2 - 1,2) + pow(y - rows // 2 - 1,2) <= pow(r, 2)):
+                if (pow(x - rows // 2 - 1,2) + 
+                    pow(y - rows // 2 - 1,2) <= pow(r, 2)):
                     # change the circle region to lena
-                    im1[x,y] = im2[x,y]
-        r += 15
-        # append the temp img
-        frames.append(Image.fromarray(im1))
+                    img1[x,y] = img2[x,y]
+        r += 10
+        # 将处理好的帧图片存进缓存队列
+        frames.append(Image.fromarray(img1))
 
-    # create a gif
-    frames[0].save('./img/hw1.gif', save_all = True, append_images = frames[1:], duration = 0.01, loop = 0)
-    # Show the gif
-    os.system(r"start ./img/hw1.gif")
-    print("Success")
+    try:
+        # 生成并保存gif图
+        frames[0].save('./img/hw1.gif', save_all=True, 
+            append_images=frames[1:], duration=0.01, loop=0)
+    except IOError:
+        print("Error: file path error")
+    else:
+        # 显示gif图
+        os.system(r"start ./img/hw1.gif")
 
-# main()
-img1 = Image.open('./img/Nobel.jpg')
-img2 = Image.open('./img/lena.jpg')
-IrisWipe(img1, img2)
+    # process finish
+    pbar.finish()
+
+if __name__ == '__main__':
+    ImageProcess(str1='./img/Nobel.jpg',
+                str2='./img/lena.jpg')
