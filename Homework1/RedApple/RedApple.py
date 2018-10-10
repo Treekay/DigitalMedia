@@ -29,23 +29,26 @@ def ImgProcess(img):
     np.array(LUT)
 
     # process the img
-    time_start=time.time()
-    print("Processing...")
     for i in range(len(img)):
         img[i] = LUT[findMinEdistancePos(img[i],LUT)]
     img = np.reshape(img,(dim1,dim2,dim3))
-    print("Finish!")
-    time_end=time.time()
-    print("cost time:",int(time_end-time_start),"s")
+    
 
     # save the new img
     im = Image.fromarray(img)
     im.save("./img/hw2.jpg")
 
     # show and compare
-    Image.open('./img/redapple.jpg').show(title="RedApple")
     Image.open('./img/hw2.jpg').show(title="AfterProcess")
     ###press 'ESC' to exit
 
 # main()
+
+print("Processing...")
+time_start=time.time()
+
 ImgProcess(np.array(Image.open('./img/redapple.jpg')))
+print("Finish!")
+
+time_end=time.time()
+print("cost time:",int(time_end-time_start),"seconds")
