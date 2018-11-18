@@ -54,7 +54,7 @@ class Compress(object):
         while current.shape[1] % 8 != 0:
             current = np.insert(current, current.shape[1], values=0, axis=1)
         return current
-                    
+              
     '''
     @msg: deblock the origin image to some 8*8 blocks
     '''
@@ -186,15 +186,27 @@ class Compress(object):
                 else:
                     # AC.append((zeroNum, nextValue))
                     self.__RLCed[t].append(((zeroNum / len(str(nextValue))), nextValue))
+            self.__RLCed[t].append((0, 0)) # EOB
 
     '''
     @msg: Entropy Coding using Huffman coding
     '''
     def __HuffmanCoding(self):
-        pass
+        # Y-DC
+        Y_DC_Huffman_Table = [000, 010, 011, 100, 101, 110, 1110, 11110, 111110, 1111110, 11111110, 111111110]
+        Y_DC_VLI_Table = []
+        # UV -DC
+        UV_DC_Huffman_Table = []
+        UV_DC_VLI_Table = []
+        # Y-AC
+        Y_AC_Huffman_Table = []
+        Y_AC_VLI_Table = []
+        # UV - AC
+        UV_AC_Huffman_Table = []
+        UV_AC_VLI_Table = []
 
     '''
-    @msg: return the compressed image
+    @msg: return the compressed image data
     '''
-    def getCompressed(self):
+    def getCompressedData(self):
         pass
