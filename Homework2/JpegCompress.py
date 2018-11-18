@@ -5,18 +5,23 @@ import numpy as np
 
 class Compress(object):
     def __init__(self, srcPath):
+        # load image
         self.__RGBimg = cv2.imread(srcPath)
         self.__width, self.__height, self.__dim = self.__RGBimg.shape
-
+        # do compress
         self.__RGB2YCbCr()
         self.__DoubleSampling()
         self.__Deblocks()
         self.__DCT()
         self.__Quantization()
-        self.__Zigzag()
+        self.__ZigzagScan()
         self.__DPCM()
         self.__RLC()
+        self.__HuffmanCoding()
 
+    '''
+    @msg: convert image from RGB-ColorSpace to YUV-Colorspace
+    '''
     def __RGB2YCbCr(self):
         self.__YUVimg = self.__RGBimg
         for x in range(self.__width):
@@ -28,32 +33,47 @@ class Compress(object):
                 self.__YUVimg[x, y, 1] = -0.148223 * R - 0.290992 * G + 0.439215 * B + 128
                 self.__YUVimg[x, y, 0] = 0.439215 * R - 0.367789 * G - 0.071426 * B + 128
 
+    '''
+    @msg: double sampling the YUV-ColorSpace image
+    '''
     def __DoubleSampling(self):
         self.__YUVbands = [[], [], []]
         self.__YUVbands[2] = cv2.split(self.__YUVimg)[2][range(self.__width)][:, range(self.__height)]
         self.__YUVbands[1] = cv2.split(self.__YUVimg)[1][range(0, self.__width, 2)][:, range(0, self.__height, 2)]
         self.__YUVbands[0] = cv2.split(self.__YUVimg)[0][range(1, self.__width - 1, 2)][:, range(1, self.__height - 1, 2)]
 
+    '''
+    @msg: supple the width and height of each channel of the image to eight's times
+    @param {list[[]]} currrent: the origin list
+    @return: a eight's times list
+    '''
     def __LengthSupplement(self, current):
-        # 补0补到长宽都是8的倍数
+        # supple 0 until the width and height of the image is eight's times
         while current.shape[0] % 8 != 0:
             current = np.insert(current, current.shape[0], values=0, axis=0)
         while current.shape[1] % 8 != 0:
             current = np.insert(current, current.shape[1], values=0, axis=1)
         return current
                     
+    '''
+    @msg: deblock the origin image to some 8*8 blocks
+    '''
     def __Deblocks(self):
         self.__Blocks = [[], [], []]
         for t in range(3):
             current = self.__LengthSupplement(self.__YUVbands[t])
-            # 分为若干个8*8的子块
+            # deblock the origin image to some 8*8 blocks
             width, height = current.shape
             for i in range(width // 8):
                 for j in range(height // 8):
                     self.__Blocks[t].append(current[range(i, i + 8)][:, range(j, j + 8)])
 
+    '''
+    @msg: generate a DCT transform matrix
+    @return: a DCT transform matrix
+    '''
     def __DCTtableGenerate(self):
-        A = []  # DCT变换矩阵
+        A = []  # DCT transform matrix
         for i in range(8):
             for j in range(8):
                 if i == 0:
@@ -64,6 +84,9 @@ class Compress(object):
         A = np.array(A).reshape(8, 8).tolist()
         return A
 
+    '''
+    @msg: Discrete Cosine Transform
+    '''
     def __DCT(self):
         self.__DCTed = [[], [], []]
         A = self.__DCTtableGenerate()
@@ -71,6 +94,9 @@ class Compress(object):
             for current in self.__Blocks[t]:
                 self.__DCTed[t].append(A * current * np.transpose(A))
 
+    '''
+    @msg: quantizating the image blocks
+    '''
     def __Quantization(self):
         self.__Quantizated = self.__DCTed
         # Y channel
@@ -104,7 +130,10 @@ class Compress(object):
                 for j in range(8):
                     current[i, j] = int(round(current[i, j] / table[i][j]))
 
-    def __Zigzag(self):
+    '''
+    @msg: zigzag scanning the 8*8-blocks to a 64-row
+    '''
+    def __ZigzagScan(self):
         self.__Zigzaged = [[], [], []]
         table = [[0, 1, 5, 6, 14, 15, 27, 28],
                 [2, 4, 7, 13, 16, 26, 29, 42],
@@ -122,6 +151,9 @@ class Compress(object):
                         temp[table[i][j]] = current[i, j]
                 self.__Zigzaged[t].append(temp)
 
+    '''
+    @msg: Differential Pulse Code Modulation
+    '''
     def __DPCM(self):
         self.__DPCMed = [[], [], []]
         for t in range(3):
@@ -136,6 +168,9 @@ class Compress(object):
                     temp.append((size, value))
                 self.__DPCMed[t].append(temp)
 
+    '''
+    @msg: Run Length Coding
+    '''
     def __RLC(self):
         self.__RLCed = [[], [], []]
         for t in range(3):
@@ -145,9 +180,21 @@ class Compress(object):
                 nextValue = current[i]
                 if nextValue == 0:
                     zeroNum += 1
+                    if zeroNum >= 16:
+                        self.__RLCed[t].append((15, 0))
+                        zeroNum = 1
                 else:
                     # AC.append((zeroNum, nextValue))
                     self.__RLCed[t].append(((zeroNum / len(str(nextValue))), nextValue))
 
-    def getCompressedImage():
+    '''
+    @msg: Entropy Coding using Huffman coding
+    '''
+    def __HuffmanCoding(self):
+        pass
+
+    '''
+    @msg: return the compressed image
+    '''
+    def getCompressed(self):
         pass

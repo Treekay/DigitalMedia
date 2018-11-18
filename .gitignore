@@ -1,5 +1,7 @@
-*.doc
+﻿*.doc
 *.docx
 黄*.pdf
+黄*.md
 *.zip
 *.rar
+__pycache__
