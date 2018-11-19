@@ -17,21 +17,22 @@ class Compress(object):
         self.__ZigzagScan()
         self.__DPCM()
         self.__RLC()
-        self.__HuffmanCoding()
+        # self.__EntropyCoding()
 
     '''
     @msg: convert image from RGB-ColorSpace to YUV-Colorspace
     '''
     def __RGB2YCbCr(self):
-        self.__YUVimg = self.__RGBimg
-        for x in range(self.__width):
-            for y in range(self.__height):
-                R = self.__RGBimg[x, y, 2] 
-                G = self.__RGBimg[x, y, 1]
-                B = self.__RGBimg[x, y, 0]
-                self.__YUVimg[x, y, 2] = 0.256789 * R + 0.504129 * G + 0.097906 * B + 16
-                self.__YUVimg[x, y, 1] = -0.148223 * R - 0.290992 * G + 0.439215 * B + 128
-                self.__YUVimg[x, y, 0] = 0.439215 * R - 0.367789 * G - 0.071426 * B + 128
+        # self.__YUVimg = self.__RGBimg
+        # for x in range(self.__width):
+        #     for y in range(self.__height):
+        #         R = self.__RGBimg[x, y, 2] 
+        #         G = self.__RGBimg[x, y, 1]
+        #         B = self.__RGBimg[x, y, 0]
+        #         self.__YUVimg[x, y, 2] = 0.256789 * R + 0.504129 * G + 0.097906 * B + 16
+        #         self.__YUVimg[x, y, 1] = -0.148223 * R - 0.290992 * G + 0.439215 * B + 128
+        #         self.__YUVimg[x, y, 0] = 0.439215 * R - 0.367789 * G - 0.071426 * B + 128
+        self.__YUVimg = cv2.cvtColor(self.__RGBimg, cv2.COLOR_BGR2YCR_CB)
 
     '''
     @msg: double sampling the YUV-ColorSpace image
@@ -77,9 +78,9 @@ class Compress(object):
         for i in range(8):
             for j in range(8):
                 if i == 0:
-                    a = math.sqrt(1 / 8)
+                    a = 1 / math.sqrt(8)
                 else:
-                    a = math.sqrt(2 / 8)
+                    a = 1 / 2
                 A.append(a * math.cos((j + 0.5) * math.pi * i / 8))
         A = np.array(A).reshape(8, 8).tolist()
         return A
@@ -108,7 +109,7 @@ class Compress(object):
                 [24, 35, 55, 64, 81, 104, 113, 92],
                 [49, 64, 78, 87, 103, 121, 120, 101],
                 [72, 92, 95, 98, 112, 100, 103, 99]]
-        for current in self.__Quantizated[0]:
+        for current in self.__Quantizated[2]:
             for i in range(8):
                 for j in range(8):
                     current[i, j] = int(round(current[i, j] / table[i][j]))
@@ -125,7 +126,7 @@ class Compress(object):
             for i in range(8):
                 for j in range(8):
                     current[i, j] = int(round(current[i, j] / table[i][j]))
-        for current in self.__Quantizated[2]:
+        for current in self.__Quantizated[0]:
             for i in range(8):
                 for j in range(8):
                     current[i, j] = int(round(current[i, j] / table[i][j]))
@@ -156,57 +157,74 @@ class Compress(object):
     '''
     def __DPCM(self):
         self.__DPCMed = [[], [], []]
+        maxSize = 0
         for t in range(3):
             for current in self.__Zigzaged[t]:
-                temp = []
                 value = current[0]
                 size = len(str(value))
-                temp.append((size, value))
+                self.__DPCMed[t].append((size, value))
                 for i in range(1, 64):
                     value = current[i] - current[i-1]
                     size = len(str(value))
-                    temp.append((size, value))
-                self.__DPCMed[t].append(temp)
+                    if size > maxSize:
+                        maxSize = value
+                    self.__DPCMed[t].append((size, value))
 
     '''
     @msg: Run Length Coding
     '''
     def __RLC(self):
         self.__RLCed = [[], [], []]
+        maxSize = 0
         for t in range(3):
-            current = self.__Zigzaged[t]
-            zeroNum = (1 if current == 0 else 0)
-            for i in range(1, len(current)):
-                nextValue = current[i]
-                if nextValue == 0:
-                    zeroNum += 1
-                    if zeroNum >= 16:
-                        self.__RLCed[t].append((15, 0))
-                        zeroNum = 1
-                else:
-                    # AC.append((zeroNum, nextValue))
-                    self.__RLCed[t].append(((zeroNum / len(str(nextValue))), nextValue))
-            self.__RLCed[t].append((0, 0)) # EOB
+            for current in self.__Zigzaged[t]:
+                zeroNum = (1 if current[0] == 0 else 0)
+                for i in range(1, 64):
+                    nextValue = current[i]
+                    if nextValue == 0:
+                        zeroNum += 1
+                        if zeroNum >= 16:
+                            self.__RLCed[t].append((15, 0))
+                            zeroNum = 1
+                    else:
+                        # AC.append((zeroNum, nextValue))
+                        self.__RLCed[t].append((zeroNum / len(str(nextValue)), nextValue))
+                    if zeroNum / len(str(nextValue)) > maxSize:
+                        maxSize = zeroNum / len(str(nextValue))
+                self.__RLCed[t].append((0, 0)) # EOB
+    
+    def __VLIDC(self, value):
+        if value == 0:
+            return 0
+        else:
+            for i in range(1, 12):
+                if abs(value) < pow(2, i):
+                    return i
+
+    def __VLIAC(self, value):
+        if value == 0:
+            return 0
+        else:
+            for i in range(1, 11):
+                if abs(value) < pow(2, i):
+                    return i
 
     '''
-    @msg: Entropy Coding using Huffman coding
+    @msg: Entropy Coding using Huffman coding and VLI coding
     '''
-    def __HuffmanCoding(self):
+    def __EntropyCoding(self):
+        pass
         # Y-DC
-        Y_DC_Huffman_Table = [000, 010, 011, 100, 101, 110, 1110, 11110, 111110, 1111110, 11111110, 111111110]
-        Y_DC_VLI_Table = []
-        # UV -DC
-        UV_DC_Huffman_Table = []
-        UV_DC_VLI_Table = []
-        # Y-AC
-        Y_AC_Huffman_Table = []
-        Y_AC_VLI_Table = []
-        # UV - AC
-        UV_AC_Huffman_Table = []
-        UV_AC_VLI_Table = []
+        # Y_DC_Huffman = [00, 010, 011, 100, 101, 110, 1110, 11110, 111110, 1111110, 11111110, 111111110]
+        # # UV -DC
+        # UV_DC_Huffman = [00, 01, 10, 110, 1110, 11110, 111110, 1111110, 11111110, 111111110, 1111111110, 11111111110]
+        # # Y-AC
+        # Y_AC_Huffman = []
+        # # UV - AC
+        # UV_AC_Huffman = []
 
     '''
     @msg: return the compressed image data
     '''
     def getCompressedData(self):
-        pass
+        return 
