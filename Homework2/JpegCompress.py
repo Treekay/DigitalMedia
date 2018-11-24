@@ -125,12 +125,11 @@ class Compress(object):
             # entropy coding on AC
             for current in self.__RLCed[t]:
                 zeroNum = current[0]
-                nextValue = current[1]
-                amplitude = getAmplitude(nextValue)
+                amplitude = getAmplitude(current[1])
                 while zeroNum > 15:
-                    self.__ACcode[t].append((AC_HuffmanTable[t][15][0], '0'))
+                    self.__ACcode[t].append((AC_HuffmanTable[t][15][0], ''))
                     zeroNum -= 15
-                self.__ACcode[t].append((AC_HuffmanTable[t][zeroNum][len(str(nextValue))], amplitude))
+                self.__ACcode[t].append((AC_HuffmanTable[t][zeroNum][len(amplitude)], amplitude))
 
     # 获得压缩数据
     def getCompressedData(self):

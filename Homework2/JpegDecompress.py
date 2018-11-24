@@ -27,7 +27,7 @@ class Decompress(object):
                 self.__DPCMed[t].append(amplitudeToValue(current[1]))
             for current in self.__ACcode[t]:
                 nextValue = amplitudeToValue(current[1])
-                zeroNum = getRunlength(t, len(str(nextValue)), current[0])
+                zeroNum = getRunlength(t, len(current[1]), current[0])
                 self.__RLCed[t].append((zeroNum, nextValue))
     
     # 反DC系数
@@ -47,26 +47,21 @@ class Decompress(object):
     def __IRLC(self):
         for t in range(3):
             count = 0
-            for current in self.__RLCed[t]:
-                zeroNum = current[0]
-                nextValue = current[1]
-                if zeroNum == 0 and nextValue != 0:
-                    self.__Zigzaged[t][count].append(nextValue)
-                elif zeroNum != 0 and nextValue != 0:
-                    for i in range(zeroNum):
+            for pair in self.__RLCed[t]:
+                ac = []
+                if pair[0] == 0 and pair[1] == 0:
+                    while len(self.__Zigzaged[t][count]) < 64:
                         self.__Zigzaged[t][count].append(0)
-                    self.__Zigzaged[t][count].append(nextValue)
-                elif zeroNum != 0 and nextValue == 0:
-                    for i in range(zeroNum):
-                        self.__Zigzaged[t][count].append(0)
-                elif zeroNum == 0 and nextValue == 0:
                     count += 1
+                ac = ac + [0 for i in range(pair[0])] + [pair[1]]
+                
 
     # 反Zigzag
     def __IZigzagScan(self):
         self.__Quantizated = [[], [], []]
         for t in range(3):
             for current in self.__Zigzaged[t]:
+                print(len(current))
                 temp = np.zeros((8, 8), dtype=int).tolist()
                 for i in range(8):
                     for j in range(8):

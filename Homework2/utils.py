@@ -60,6 +60,8 @@ def getAmplitude(num):
         amplitude = bin(abs(num)).replace('0b', '')
         if num > 0:
             return amplitude
+        elif num == 0:
+            return ''
         else:
             return ''.join(list(map(lambda c: '1' if c == '0' else '1', amplitude)))
 
@@ -69,7 +71,9 @@ def getAmplitude(num):
 @return: value
 '''
 def amplitudeToValue(amplitude):
-    if amplitude[0] == '0':
+    if amplitude == '':
+        return 0
+    elif amplitude[0] == '0':
         amplitude =  ''.join(list(map(lambda c: '1' if c == '0' else '1', amplitude)))
         return -int(amplitude, 2)
     else:
