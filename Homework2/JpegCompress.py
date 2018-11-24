@@ -1,7 +1,8 @@
 #JpegCompress.py
 import cv2
-import math
 import numpy as np
+
+import utils
 
 class Compress(object):
     def __init__(self, srcPath):
@@ -23,16 +24,10 @@ class Compress(object):
     @msg: convert image from RGB-ColorSpace to YUV-Colorspace
     '''
     def __RGB2YCbCr(self):
-        # self.__YUVimg = self.__RGBimg
-        # for x in range(self.__width):
-        #     for y in range(self.__height):
-        #         R = self.__RGBimg[x, y, 2] 
-        #         G = self.__RGBimg[x, y, 1]
-        #         B = self.__RGBimg[x, y, 0]
-        #         self.__YUVimg[x, y, 2] = 0.256789 * R + 0.504129 * G + 0.097906 * B + 16
-        #         self.__YUVimg[x, y, 1] = -0.148223 * R - 0.290992 * G + 0.439215 * B + 128
-        #         self.__YUVimg[x, y, 0] = 0.439215 * R - 0.367789 * G - 0.071426 * B + 128
-        self.__YUVimg = cv2.cvtColor(self.__RGBimg, cv2.COLOR_BGR2YCR_CB)
+        xform = np.array([[.299, .587, .114], [-.1687, -.3313, .5], [.5, -.4187, -.0813]])
+        self.__YUVimg = im.dot(xform.T)
+        self.__YUVimg[:, :, [1, 2]] += 128
+        self.__YUVimg = np.uint8(self.__YUVimg)
 
     '''
     @msg: double sampling the YUV-ColorSpace image
@@ -70,27 +65,11 @@ class Compress(object):
                     self.__Blocks[t].append(current[range(i, i + 8)][:, range(j, j + 8)])
 
     '''
-    @msg: generate a DCT transform matrix
-    @return: a DCT transform matrix
-    '''
-    def __DCTtableGenerate(self):
-        A = []  # DCT transform matrix
-        for i in range(8):
-            for j in range(8):
-                if i == 0:
-                    a = 1 / math.sqrt(8)
-                else:
-                    a = 1 / 2
-                A.append(a * math.cos((j + 0.5) * math.pi * i / 8))
-        A = np.array(A).reshape(8, 8).tolist()
-        return A
-
-    '''
     @msg: Discrete Cosine Transform
     '''
     def __DCT(self):
         self.__DCTed = [[], [], []]
-        A = self.__DCTtableGenerate()
+        A = getDCTtable()
         for t in range(3):
             for current in self.__Blocks[t]:
                 self.__DCTed[t].append(A * current * np.transpose(A))
@@ -101,74 +80,46 @@ class Compress(object):
     def __Quantization(self):
         self.__Quantizated = self.__DCTed
         # Y channel
-        table = [[16, 11, 10, 16, 24, 40, 51, 61],
-                [12, 12, 14, 19, 26, 58, 60, 55],
-                [14, 13, 16, 24, 40, 57, 69, 56],
-                [14, 17, 22, 29, 51, 87, 80, 62],
-                [18, 22, 37, 56, 68, 109, 103, 77],
-                [24, 35, 55, 64, 81, 104, 113, 92],
-                [49, 64, 78, 87, 103, 121, 120, 101],
-                [72, 92, 95, 98, 112, 100, 103, 99]]
         for current in self.__Quantizated[2]:
             for i in range(8):
                 for j in range(8):
-                    current[i, j] = int(round(current[i, j] / table[i][j]))
+                    current[i, j] = int(round(current[i, j] / YquantizationTable[i][j]))
         # U, V channel
-        table = [[17, 18, 24, 47, 99, 99, 99, 99],
-                [18, 21, 26, 66, 99, 99, 99, 99],
-                [24, 26, 56, 99, 99, 99, 99, 99],
-                [47, 66, 99, 99, 99, 99, 99, 99],
-                [99, 99, 99, 99, 99, 99, 99, 99],
-                [99, 99, 99, 99, 99, 99, 99, 99],
-                [99, 99, 99, 99, 99, 99, 99, 99],
-                [99, 99, 99, 99, 99, 99, 99, 99]]
         for current in self.__Quantizated[1]:
             for i in range(8):
                 for j in range(8):
-                    current[i, j] = int(round(current[i, j] / table[i][j]))
+                    current[i, j] = int(round(current[i, j] / UVquantizationTable[i][j]))
         for current in self.__Quantizated[0]:
             for i in range(8):
                 for j in range(8):
-                    current[i, j] = int(round(current[i, j] / table[i][j]))
+                    current[i, j] = int(round(current[i, j] / UVquantizationTable[i][j]))
 
     '''
     @msg: zigzag scanning the 8*8-blocks to a 64-row
     '''
     def __ZigzagScan(self):
         self.__Zigzaged = [[], [], []]
-        table = [[0, 1, 5, 6, 14, 15, 27, 28],
-                [2, 4, 7, 13, 16, 26, 29, 42],
-                [3, 8, 12, 17, 25, 30, 41, 43],
-                [9, 11, 18, 24, 31, 40, 44, 53],
-                [10, 19, 23, 32, 39, 45, 52, 54],
-                [20, 22, 33, 38, 46, 51, 55, 60],
-                [21, 34, 37, 47, 50, 56, 59, 61],
-                [35, 36, 48, 49, 57, 58, 62, 63]]
         for t in range(3):
             for current in self.__Quantizated[t]:
                 temp = [0] * 64
                 for i in range(8):
                     for j in range(8):
-                        temp[table[i][j]] = current[i, j]
+                        temp[ZigzagTable[i][j]] = current[i, j]
                 self.__Zigzaged[t].append(temp)
+
 
     '''
     @msg: Differential Pulse Code Modulation
     '''
     def __DPCM(self):
         self.__DPCMed = [[], [], []]
-        maxSize = 0
         for t in range(3):
             for current in self.__Zigzaged[t]:
-                value = current[0]
-                size = len(str(value))
-                self.__DPCMed[t].append((size, value))
+                DC = current[0]
+                self.__DPCMed[t].append(DC)
                 for i in range(1, 64):
-                    value = current[i] - current[i-1]
-                    size = len(str(value))
-                    if size > maxSize:
-                        maxSize = value
-                    self.__DPCMed[t].append((size, value))
+                    DC = current[i] - current[i-1]
+                    self.__DPCMed[t].append(DC)
 
     '''
     @msg: Run Length Coding
@@ -178,53 +129,46 @@ class Compress(object):
         maxSize = 0
         for t in range(3):
             for current in self.__Zigzaged[t]:
-                zeroNum = (1 if current[0] == 0 else 0)
-                for i in range(1, 64):
-                    nextValue = current[i]
-                    if nextValue == 0:
+                zeroNum = 0
+                for i in range(1, 63):
+                    if current[i] == 0:
                         zeroNum += 1
-                        if zeroNum >= 16:
-                            self.__RLCed[t].append((15, 0))
-                            zeroNum = 1
                     else:
-                        # AC.append((zeroNum, nextValue))
-                        self.__RLCed[t].append((zeroNum / len(str(nextValue)), nextValue))
-                    if zeroNum / len(str(nextValue)) > maxSize:
-                        maxSize = zeroNum / len(str(nextValue))
+                        self.__RLCed[t].append((zeroNum , current[i+1]))
+                        zeroNum = 0
                 self.__RLCed[t].append((0, 0)) # EOB
-    
-    def __VLIDC(self, value):
-        if value == 0:
-            return 0
-        else:
-            for i in range(1, 12):
-                if abs(value) < pow(2, i):
-                    return i
 
-    def __VLIAC(self, value):
-        if value == 0:
-            return 0
+    def getAmplitude(num):
+        if num > 0:
+            return bin(num).replace('0b', '')
         else:
-            for i in range(1, 11):
-                if abs(value) < pow(2, i):
-                    return i
+            return bin(~num).replace('0b', '')
 
     '''
     @msg: Entropy Coding using Huffman coding and VLI coding
     '''
     def __EntropyCoding(self):
-        pass
-        # Y-DC
-        # Y_DC_Huffman = [00, 010, 011, 100, 101, 110, 1110, 11110, 111110, 1111110, 11111110, 111111110]
-        # # UV -DC
-        # UV_DC_Huffman = [00, 01, 10, 110, 1110, 11110, 111110, 1111110, 11111110, 111111110, 1111111110, 11111111110]
-        # # Y-AC
-        # Y_AC_Huffman = []
-        # # UV - AC
-        # UV_AC_Huffman = []
+        self.__DCcode = [[], [], []]
+        self.__ACcode = [[], [], []]
+        for t in range(3):
+            # entropy coding on DC
+            for current in self.__DPCMed[t]:
+                amplitude = getAmplitude(current)
+                size = len(amplitude)
+                self.__DCcode[t].append((DC_HuffmanTable[t][size], amplitude))
+
+            # entropy coding on AC
+            for current in self.__RLCed[t]:
+                zeroNum = current[0]
+                nextValue = current[1]
+                amplitude = getAmplitude(nextValue)
+                while zeroNum > 15:
+                    self.__ACcode[t].append((AC_HuffmanTable[t][15][0], ''))
+                    zeroNum -= 15
+                self.__ACcode[t].append((AC_HuffmanTable[t][zeroNum][len(str(nextValue))], amplitude))
 
     '''
     @msg: return the compressed image data
     '''
     def getCompressedData(self):
-        return 
+        return (self.__DCcode, self.__ACcode)
