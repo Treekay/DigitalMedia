@@ -89,12 +89,12 @@ class Compress(object):
     def __DPCM(self):
         self.__DPCMed = [[], [], []]
         for t in range(3):
-            for current in self.__Zigzaged[t]:
-                DC = current[0]
+            current = self.__Zigzaged[t]
+            self.__DPCMed[t].append(current[0][0])
+            for i in range(1, len(current)):
+                DC = current[i][0] - current[i-1][0]
                 self.__DPCMed[t].append(DC)
-                for i in range(1, 64):
-                    DC = current[i] - current[i-1]
-                    self.__DPCMed[t].append(DC)
+                
 
     # 游长编码
     def __RLC(self):
@@ -103,13 +103,14 @@ class Compress(object):
         for t in range(3):
             for current in self.__Zigzaged[t]:
                 zeroNum = 0
-                for i in range(63):
-                    if current[i+1] == 0:
+                for i in range(1, 64):
+                    if current[i] == 0:
                         zeroNum += 1
                     else:
-                        self.__RLCed[t].append((zeroNum , current[i+1]))
+                        self.__RLCed[t].append((zeroNum, current[i]))
                         zeroNum = 0
-                self.__RLCed[t].append((0, 0)) # EOB
+                if self.__RLCed[t][len(self.__RLCed[t]) - 1][1] != 0:
+                    self.__RLCed[t].append((0, 0))
 
     # 熵编码
     def __EntropyCoding(self):
