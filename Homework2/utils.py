@@ -40,15 +40,14 @@ QuantizationTable = [[[16, 11, 10, 16, 24, 40, 51, 61],
 @return: a DCT transform matrix
 '''
 def getDCTtable():
-    A = []  # DCT transform matrix
+    A = np.zeros((8, 8))  # DCT transform matrix
     for i in range(8):
         for j in range(8):
             if i == 0:
                 a = 1 / np.sqrt(8)
             else:
                 a = 1 / 2
-            A.append(a * np.cos((j + 0.5) * np.pi * i / 8))
-    A = np.array(A).reshape(8, 8).tolist()
+            A[i, j] = a * np.cos((j + 0.5) * np.pi * i / 8)
     return A
 
 '''
@@ -63,7 +62,7 @@ def getAmplitude(num):
         elif num == 0:
             return ''
         else:
-            return ''.join(list(map(lambda c: '1' if c == '0' else '1', amplitude)))
+            return ''.join(list(map(lambda c: '1' if c == '0' else '0', amplitude)))
 
 '''
 @msg: convert amplitude to value
@@ -74,7 +73,7 @@ def amplitudeToValue(amplitude):
     if amplitude == '':
         return 0
     elif amplitude[0] == '0':
-        amplitude =  ''.join(list(map(lambda c: '1' if c == '0' else '1', amplitude)))
+        amplitude =  ''.join(list(map(lambda c: '1' if c == '0' else '0', amplitude)))
         return -int(amplitude, 2)
     else:
         return int(amplitude, 2)

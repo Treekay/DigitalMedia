@@ -22,40 +22,47 @@ class Decompress(object):
         self.__DPCMed = [[], [], []]
         self.__RLCed = [[], [], []]
         for t in range(3):
-            for current in self.__DCcode[t]:
-                self.__DPCMed[t].append(amplitudeToValue(current[1]))
-            for current in self.__ACcode[t]:
-                nextValue = amplitudeToValue(current[1])
-                zeroNum = getRunlength(t, len(current[1]), current[0])
-                self.__RLCed[t].append((zeroNum, nextValue))
+            for pair in self.__DCcode[t]:
+                self.__DPCMed[t].append(amplitudeToValue(pair[1]))
+            for block in self.__ACcode[t]:
+                temp = []
+                for pair in block:
+                    nextValue = amplitudeToValue(pair[1])
+                    zeroNum = getRunlength(t, len(pair[1]), pair[0])
+                    temp.append((zeroNum, nextValue))
+                self.__RLCed[t].append(temp)
     
     # 反DC系数
     def __IDCPM(self):
         self.__Zigzaged = [[], [], []]
         for t in range(3):
-            temp = []
             current = self.__DPCMed[t]
-            temp.append(current[0])
-            self.__Zigzaged[t].append(temp)
-            for i in range(1, len(self.__DPCMed[t])):
-                temp = []
-                temp.append(current[i - 1] + current[i])
-                self.__Zigzaged[t].append(temp)
+            self.__Zigzaged[t].append([current[0]])
+            for i in range(1, len(current)):
+                self.__Zigzaged[t].append([self.__Zigzaged[t][i - 1][0] + current[i]])
 
     # 反AC系数
     def __IRLC(self):
         for t in range(3):
             count = 0
-            for pair in self.__RLCed[t]:
-                ac = []
-                if pair[0] == 0 and pair[1] == 0:
-                    while len(ac) < 64:
-                        ac.append(0)
-                    self.__Zigzaged[t][count] = ac
-                    count += 1
-                ac = ac + [0 for i in range(pair[0])] + [pair[1]]
+            for block in self.__RLCed[t]:
+                ac = self.__Zigzaged[t][count]
+                for pair in block:
+                    if pair[0] == 15 and pair[1] == 0:
+                        for i in range(15):
+                            ac.append(0)
+                    elif pair[0] != 0 and pair[1] != 0:
+                        for i in range(pair[0]):
+                            ac.append(0)
+                        ac.append(pair[1])
+                    elif pair[0] == 0 and pair[1] == 0:
+                        while len(ac) < 64:
+                            ac.append(0)
+                    else:
+                        ac.append(pair[1])
+                self.__Zigzaged[t][count] = ac
+                count += 1
                 
-
     # 反Zigzag
     def __IZigzagScan(self):
         self.__Quantizated = [[], [], []]
@@ -72,10 +79,10 @@ class Decompress(object):
         self.__DCTed = [[], [], []]
         for t in range(3):
             for current in self.__Quantizated[t]:
-                temp = np.zeros((8, 8), dtype=int).tolist()
+                temp = np.zeros((8, 8), dtype=int)
                 for i in range(8):
                     for j in range(8):
-                        temp[i][j] = current[i][j] * QuantizationTable[t][i][j]
+                        temp[i, j] = current[i][j] * QuantizationTable[t][i][j]
                 self.__DCTed[t].append(temp)
 
     # IDCT
@@ -84,24 +91,23 @@ class Decompress(object):
         A = getDCTtable()
         for t in range(3):
             for current in self.__DCTed[t]:
-                self.__Blocks[t].append(np.transpose(A) * current * A)
+                self.__Blocks[t].append(np.transpose(A).dot(current).dot(A) + 128)
 
     # 逆分块补全, 二次采样
     def __IDeblocks(self):
-        self.__YUVimg = []
+        self.__YUVimg = np.zeros((self.__height, self.__width, 3))
+        ycols = np.int(np.ceil(self.__width / 8))
+        uvcols = np.int(np.ceil(self.__width / 16))
         for i in range(self.__height):
-            row = []
             for j in range(self.__width):
-                Y = self.__Blocks[0][j // 8 * (i // 8 + 1)][i % 8][j % 8]
-                U = self.__Blocks[1][j // 16 * (i // 16 + 1)][i // 2 % 8][j // 2 % 8]
-                V = self.__Blocks[2][j // 16 * (i // 16 + 1)][i // 2 % 8][j // 2 % 8]
-                row.append([Y, U, V])
-            self.__YUVimg.append(row)
+                self.__YUVimg[i, j, 0] = self.__Blocks[0][i // 8 * ycols + j // 8][i % 8][j % 8]
+                self.__YUVimg[i, j, 1] = self.__Blocks[1][i // 16 * uvcols + j // 16][i // 2 % 8][j // 2 % 8]
+                self.__YUVimg[i, j, 2] = self.__Blocks[2][i // 16 * uvcols + j // 16][i // 2 % 8][j // 2 % 8]
 
     # 颜色空间转换
     def __YCbCr2RGB(self):
-        xform = np.array([[1, 0, 1.402], [1, -0.34414, -.71414], [1, 1.772, 0]])
-        self.__img = np.array(self.__YUVimg).astype(np.float)
+        xform = np.array([[1, 0, 1.402], [1, -0.344136, -.714136], [1, 1.772, 0]])
+        self.__img = self.__YUVimg.astype(np.float)
         self.__img[:, :, [1, 2]] -= 128
         self.__img = self.__img.dot(xform.T)
         np.putmask(self.__img, self.__img > 255, 255)
@@ -110,5 +116,5 @@ class Decompress(object):
 
     # 得到压缩的图像
     def getDecompressImg(self):
-        cv2.imshow('img', self.__img)
+        cv2.imshow('img', self.__img[..., ::-1])
         cv2.waitKey(0)
