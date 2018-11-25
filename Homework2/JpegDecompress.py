@@ -17,6 +17,8 @@ class Decompress(object):
         self.__IDeblocks()
         self.__YCbCr2RGB()
 
+        self.getDecompressImg(resPath)
+
     # 熵解码器
     def __EntropyDecoding(self):
         self.__DPCMed = [[], [], []]
@@ -115,6 +117,8 @@ class Decompress(object):
         self.__img = np.uint8(self.__img)
 
     # 得到压缩的图像
-    def getDecompressImg(self):
+    def getDecompressImg(self, resPath):
         cv2.imshow('img', self.__img[..., ::-1])
+        cv2.imwrite(resPath, self.__img[..., ::-1])
         cv2.waitKey(0)
+        cv2.destroyAllWindows()

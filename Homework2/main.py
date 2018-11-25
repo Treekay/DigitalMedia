@@ -1,6 +1,15 @@
 import JpegCompress
 import JpegDecompress
 
+# 计算压缩率
+def computeCompressionRatio():
+    pass
+
+# 计算失真度
+def computeDistortionRatio():
+    
+    pass
+
 if __name__ == "__main__":
     # Compress
     compress1 = JpegCompress.Compress('./src/cartoon.jpg')
@@ -10,6 +19,3 @@ if __name__ == "__main__":
     # Decompress
     decompress1 = JpegDecompress.Decompress(compressedData1, './res/cartoon.jpg')
     decompress2 = JpegDecompress.Decompress(compressedData2, './res/animal.jpg')
-    decompressImg1 = decompress1.getDecompressImg()
-    decompressImg2 = decompress2.getDecompressImg()
-    # Save and display image

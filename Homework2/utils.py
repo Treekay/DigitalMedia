@@ -50,6 +50,8 @@ def getDCTtable():
             A[i, j] = a * np.cos((j + 0.5) * np.pi * i / 8)
     return A
 
+DCTtable = getDCTtable()
+
 '''
 @msg: get the amplitude of the num
 @param int: num
