@@ -16,7 +16,6 @@ class Decompress(object):
         self.__IDCT()
         self.__IDeblocks()
         self.__YCbCr2RGB()
-
         self.getDecompressImg(resPath)
 
     # 熵解码器
