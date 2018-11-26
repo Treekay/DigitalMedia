@@ -1,6 +1,4 @@
 #JpegCompress.py
-import cv2
-
 from utils import *
 
 class Compress(object):
@@ -46,11 +44,7 @@ class Compress(object):
     # 补全规格化
     def __LengthSupplement(self, current):
         # supple 0 until the width and height of the image is eight's times
-        while current.shape[0] % 8 != 0:
-            current = np.insert(current, current.shape[0], values=0, axis=0)
-        while current.shape[1] % 8 != 0:
-            current = np.insert(current, current.shape[1], values=0, axis=1)
-        return current
+        return np.pad(current, ((0, 8 - self.__width % 8), (0, 8 - self.__height % 8)), 'mean')
 
     # 分块
     def __Deblocks(self, smp):
@@ -69,18 +63,14 @@ class Compress(object):
 
     # 量化
     def __Quantization(self, current, t):
-        qt = np.zeros((8, 8), dtype=int)
-        for i in range(8):
-            for j in range(8):
-                qt[i, j] = int(round(current[i, j] / QuantizationTable[t][i][j]))
-        return qt
+        return np.trunc(current / QuantizationTable[t]).astype(np.int)
 
     # Z形扫描
     def __ZigzagScan(self, current):
         zig = [0] * 64
         for i in range(8):
             for j in range(8):
-                index = ZigzagTable[i][j]
+                index = ZigzagTable[i, j]
                 zig[index] = current[i, j]
         return zig
 

@@ -1,11 +1,11 @@
-import cv2
-
+#JpegDecompress.py
 from utils import *
 
 class Decompress(object):
     def __init__(self, data, resPath):
         # load compressed data
         self.__DCcode, self.__ACcode, self.__width, self.__height = data
+        self.__resPath = resPath
         # do decompress
         blocks = [[], [], []]
         for t in range(3):
@@ -19,7 +19,6 @@ class Decompress(object):
         YUV = self.__IDeblocks(blocks)
         BGR = self.__YCbCr2BGR(YUV)
         self.__img = BGR[..., ::-1]
-        self.getDecompressImg(resPath)
 
     # 熵解码器
     def __EntropyDecoding(self, DCcode, ACcode, t):
@@ -66,16 +65,12 @@ class Decompress(object):
         qt = np.zeros((8, 8), dtype=int)
         for i in range(8):
             for j in range(8):
-                qt[i, j] = current[ZigzagTable[i][j]]
+                qt[i, j] = current[ZigzagTable[i, j]]
         return qt
 
     # 反量化器
     def __IQuantization(self, current, t):
-        dct = np.zeros((8, 8), dtype=int)
-        for i in range(8):
-            for j in range(8):
-                dct[i, j] = current[i, j] * QuantizationTable[t][i][j]
-        return dct
+        return current * QuantizationTable[t]
 
     # IDCT
     def __IDCT(self, current):
@@ -104,8 +99,8 @@ class Decompress(object):
         return np.uint8(BGR)
 
     # 得到压缩的图像
-    def getDecompressImg(self, resPath):
+    def getDecompressImg(self):
         cv2.imshow('img', self.__img)
-        cv2.imwrite(resPath, self.__img)
+        cv2.imwrite(self.__resPath, self.__img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
