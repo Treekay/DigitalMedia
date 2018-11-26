@@ -90,7 +90,7 @@ class Decompress(object):
 
     # 颜色空间转换
     def __YCbCr2RGB(self, YUV):
-        xform = np.array([[1, 0, 1.402], [1, -0.344136, -.714136], [1, 1.772, 0]])
+        xform = np.array([[1, 0, 1.402], [1, -.344136, -.714136], [1, 1.772, 0]])
         RGB = YUV.astype(np.float)
         RGB[:, :, [1, 2]] -= 128
         RGB = RGB.dot(xform.T)

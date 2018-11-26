@@ -27,10 +27,10 @@ class Compress(object):
 
     # 颜色转换
     def __RGB2YCbCr(self, RGB):
-        xform = np.array([[.299, .587, .114], [-.1687, -.331264, .5], [.5, -.418688, -.081312]])
+        xform = np.array([[.299, .587, .114], [-.168736, -.331264, .5], [.5, -.418688, -.081312]])
         YUV = RGB.dot(xform.T)
         YUV[:, :, [1, 2]] += 128
-        return np.int32(YUV)
+        return YUV.astype(np.int32)
 
     # 二次采样
     def __DoubleSampling(self, YUV):
@@ -62,7 +62,7 @@ class Compress(object):
 
     # 量化
     def __Quantization(self, current, t):
-        return np.trunc(current / QuantizationTable[t]).astype(np.int)
+        return np.round(current / QuantizationTable[t]).astype(np.int)
 
     # Z形扫描
     def __ZigzagScan(self, current):
