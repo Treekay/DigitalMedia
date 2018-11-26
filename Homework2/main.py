@@ -27,6 +27,12 @@ def computeDistortionRatio(srcPath, resPath):
     MSE = np.mean(np.square(src- res))
     print('MSE: %f' % MSE)
 
+    SNR = 10 * np.log10(np.mean(np.square(src - np.mean(src))) / MSE)
+    print('SRN: %f' % SNR)
+
+    PSNR = 10 * np.log10(np.max(np.square(src)) / MSE)
+    print('PSNR: %f' % PSNR)
+
 if __name__ == "__main__":
     # test1
     compress1 = JpegCompress.Compress('./src/cartoon.jpg')
