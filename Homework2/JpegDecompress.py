@@ -17,8 +17,8 @@ class Decompress(object):
                 dct = self.__IQuantization(qt, t)
                 blocks[t].append(self.__IDCT(dct))
         YUV = self.__IDeblocks(blocks)
-        BGR = self.__YCbCr2BGR(YUV)
-        self.__img = BGR[..., ::-1]
+        RGB = self.__YCbCr2RGB(YUV)
+        self.__img = RGB[..., ::-1]
 
     # 熵解码器
     def __EntropyDecoding(self, DCcode, ACcode, t):
@@ -89,14 +89,14 @@ class Decompress(object):
         return YUVimg
 
     # 颜色空间转换
-    def __YCbCr2BGR(self, YUV):
+    def __YCbCr2RGB(self, YUV):
         xform = np.array([[1, 0, 1.402], [1, -0.344136, -.714136], [1, 1.772, 0]])
-        BGR = YUV.astype(np.float)
-        BGR[:, :, [1, 2]] -= 128
-        BGR = BGR.dot(xform.T)
-        np.putmask(BGR, BGR > 255, 255)
-        np.putmask(BGR, BGR < 0, 0)
-        return np.uint8(BGR)
+        RGB = YUV.astype(np.float)
+        RGB[:, :, [1, 2]] -= 128
+        RGB = RGB.dot(xform.T)
+        np.putmask(RGB, RGB > 255, 255)
+        np.putmask(RGB, RGB < 0, 0)
+        return np.uint8(RGB)
 
     # 得到压缩的图像
     def getDecompressImg(self):
@@ -104,3 +104,4 @@ class Decompress(object):
         cv2.imwrite(self.__resPath, self.__img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+        return self.__img

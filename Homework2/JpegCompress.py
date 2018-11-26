@@ -2,9 +2,8 @@
 from utils import *
 
 class Compress(object):
-    def __init__(self, srcPath):
+    def __init__(self, img):
         # load image
-        img = cv2.imread(srcPath)
         self.__height, self.__width, self.__dim = img.shape
         # do compress
         YUV = self.__RGB2YCbCr(img[:, :, :: -1])
@@ -95,7 +94,7 @@ class Compress(object):
             else:
                 rc.append((zeroNum, current[i]))
                 zeroNum = 0
-        if zeroNum and len(rc) < 64:
+        if zeroNum:
             rc.append((0, 0))
         return rc
 

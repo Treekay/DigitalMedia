@@ -5,49 +5,43 @@ import JpegCompress
 import JpegDecompress
 
 # 计算压缩率
-def computeCompressionRatio(srcPath, compressed):
-    src = cv2.imread(srcPath)
+def computeCompressionRatio(src, res):
     rows, cols, dims = src.shape
-    pixels = rows * cols * dims
-    data = pixels * 8
+    data = rows * cols * dims * 8
 
-    dc = compressed[0]
-    ac = compressed[1]
     compressData = 0
     for t in range(3):
-        compressData += 4 * 8 * len(dc[t]) + 4 * 8 * len(ac[t])
+        compressData += 4 * 8 * len(res[0][t])
+        for current in res[1][t]:
+            compressData += 4 * 8 * len(current)
 
     ratio = compressData / data
     print("Compression Ratio: %f" % ratio)
 
 # 计算失真度
-def computeDistortionRatio(srcPath, resPath):
-    src = cv2.imread(srcPath)
-    res = cv2.imread(resPath)
+def computeDistortionRatio(src, res):
     MSE = np.mean(np.square(src- res))
     print('MSE: %f' % MSE)
 
-    SNR = 10 * np.log10(np.mean(np.square(src - np.mean(src))) / MSE)
-    print('SRN: %f' % SNR)
-
-    PSNR = 10 * np.log10(np.max(np.square(src)) / MSE)
-    print('PSNR: %f' % PSNR)
-
 if __name__ == "__main__":
     # test1
-    compress1 = JpegCompress.Compress('./src/cartoon.jpg')
+    src1 = cv2.imread('./src/cartoon.jpg')
+    # JPEG压缩图像
+    compress1 = JpegCompress.Compress(src1)
     compressedData1 = compress1.getCompressedData()
-    computeCompressionRatio('./src/cartoon.jpg', compressedData1)
-
-    decompress1 = JpegDecompress.Decompress(compressedData1, './res/cartoon.png')
+    computeCompressionRatio(src1, compressedData1)
+    # 将压缩结果解码为无损格式图像(若存为jpg格式得到的是二次压缩的压缩结果)
+    decompress1 = JpegDecompress.Decompress(compressedData1, './res/cartoon.jpg')
     compressedImg1 = decompress1.getDecompressImg()
-    computeDistortionRatio('./src/cartoon.jpg', './res/cartoon.png')
+    computeDistortionRatio(src1, compressedImg1)
 
     # test2
-    compress2 = JpegCompress.Compress('./src/animal.jpg')
+    src2 = cv2.imread('./src/animal.jpg')
+    # JPEG压缩图像
+    compress2 = JpegCompress.Compress(src2)
     compressedData2 = compress2.getCompressedData()
-    computeCompressionRatio('./src/animal.jpg', compressedData2)
-
-    decompress2 = JpegDecompress.Decompress(compressedData2, './res/animal.png')
+    computeCompressionRatio(src2, compressedData2)
+    # 将压缩结果解码为无损格式图像(若存为jpg格式得到的是二次压缩的压缩结果)
+    decompress2 = JpegDecompress.Decompress(compressedData2, './res/animal.jpg')
     compressedImg2 = decompress2.getDecompressImg()
-    computeDistortionRatio('./src/animal.jpg', './res/animal.png')
+    computeDistortionRatio(src2, compressedImg2)
