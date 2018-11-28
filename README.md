@@ -1,2 +1,2 @@
-# Multimedia
-some work about ImageProcess and Multimedia
+# Digitalmedia
+some work about ImageProcess and digital media
